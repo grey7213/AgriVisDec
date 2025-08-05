@@ -441,8 +441,8 @@ git push origin feature/your-feature-name
 
 ## 📞 联系我们
 
-- **项目主页**: https://github.com/your-username/AgriDec
-- **问题反馈**: https://github.com/your-username/AgriDec/issues
+- **项目主页**: https://github.com/grey7213/AgriDec
+- **问题反馈**: https://github.com/grey7213/AgriDec/issues
 - **邮箱**: yjy112508@163.com
 - **上传指南**: [GitHub上传指南](docs/GITHUB_UPLOAD_GUIDE.md)
 - **项目文档**: [文档目录](docs/)
