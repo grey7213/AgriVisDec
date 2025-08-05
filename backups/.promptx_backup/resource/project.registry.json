@@ -1,0 +1,124 @@
+{
+  "version": "2.0.0",
+  "source": "project",
+  "metadata": {
+    "version": "2.0.0",
+    "description": "project 级资源注册表",
+    "createdAt": "2025-08-04T14:32:52.556Z",
+    "updatedAt": "2025-08-04T14:32:52.571Z",
+    "resourceCount": 7
+  },
+  "resources": [
+    {
+      "id": "agri-data-analyst",
+      "source": "project",
+      "protocol": "role",
+      "name": "Agri Data Analyst 角色",
+      "description": "专业角色，提供特定领域的专业能力",
+      "reference": "@project://.promptx/resource/role/agri-data-analyst/agri-data-analyst.role.md",
+      "metadata": {
+        "createdAt": "2025-08-04T14:32:52.560Z",
+        "updatedAt": "2025-08-04T14:32:52.560Z",
+        "scannedAt": "2025-08-04T14:32:52.560Z",
+        "path": "role/agri-data-analyst/agri-data-analyst.role.md"
+      }
+    },
+    {
+      "id": "agri-data-workflow",
+      "source": "project",
+      "protocol": "execution",
+      "name": "Agri Data Workflow 执行模式",
+      "description": "执行模式，定义具体的行为模式",
+      "reference": "@project://.promptx/resource/role/agri-data-analyst/execution/agri-data-workflow.execution.md",
+      "metadata": {
+        "createdAt": "2025-08-04T14:32:52.562Z",
+        "updatedAt": "2025-08-04T14:32:52.562Z",
+        "scannedAt": "2025-08-04T14:32:52.562Z",
+        "path": "role/agri-data-analyst/execution/agri-data-workflow.execution.md"
+      }
+    },
+    {
+      "id": "agricultural-domain-thinking",
+      "source": "project",
+      "protocol": "thought",
+      "name": "Agricultural Domain Thinking 思维模式",
+      "description": "思维模式，指导AI的思考方式",
+      "reference": "@project://.promptx/resource/role/agri-data-analyst/thought/agricultural-domain-thinking.thought.md",
+      "metadata": {
+        "createdAt": "2025-08-04T14:32:52.564Z",
+        "updatedAt": "2025-08-04T14:32:52.564Z",
+        "scannedAt": "2025-08-04T14:32:52.564Z",
+        "path": "role/agri-data-analyst/thought/agricultural-domain-thinking.thought.md"
+      }
+    },
+    {
+      "id": "agri-chart-generator",
+      "source": "project",
+      "protocol": "manual",
+      "name": "Agri Chart Generator manual",
+      "description": "manual类型的资源",
+      "reference": "@project://.promptx/resource/tool/agri-chart-generator/agri-chart-generator.manual.md",
+      "metadata": {
+        "createdAt": "2025-08-04T14:32:52.566Z",
+        "updatedAt": "2025-08-04T14:32:52.566Z",
+        "scannedAt": "2025-08-04T14:32:52.566Z",
+        "path": "tool/agri-chart-generator/agri-chart-generator.manual.md"
+      }
+    },
+    {
+      "id": "agri-chart-generator",
+      "source": "project",
+      "protocol": "tool",
+      "name": "Agri Chart Generator tool",
+      "description": "tool类型的资源",
+      "reference": "@project://.promptx/resource/tool/agri-chart-generator/agri-chart-generator.tool.js",
+      "metadata": {
+        "createdAt": "2025-08-04T14:32:52.567Z",
+        "updatedAt": "2025-08-04T14:32:52.567Z",
+        "scannedAt": "2025-08-04T14:32:52.567Z",
+        "path": "tool/agri-chart-generator/agri-chart-generator.tool.js"
+      }
+    },
+    {
+      "id": "agri-data-crawler",
+      "source": "project",
+      "protocol": "manual",
+      "name": "Agri Data Crawler manual",
+      "description": "manual类型的资源",
+      "reference": "@project://.promptx/resource/tool/agri-data-crawler/agri-data-crawler.manual.md",
+      "metadata": {
+        "createdAt": "2025-08-04T14:32:52.569Z",
+        "updatedAt": "2025-08-04T14:32:52.569Z",
+        "scannedAt": "2025-08-04T14:32:52.569Z",
+        "path": "tool/agri-data-crawler/agri-data-crawler.manual.md"
+      }
+    },
+    {
+      "id": "agri-data-crawler",
+      "source": "project",
+      "protocol": "tool",
+      "name": "Agri Data Crawler tool",
+      "description": "tool类型的资源",
+      "reference": "@project://.promptx/resource/tool/agri-data-crawler/agri-data-crawler.tool.js",
+      "metadata": {
+        "createdAt": "2025-08-04T14:32:52.570Z",
+        "updatedAt": "2025-08-04T14:32:52.570Z",
+        "scannedAt": "2025-08-04T14:32:52.570Z",
+        "path": "tool/agri-data-crawler/agri-data-crawler.tool.js"
+      }
+    }
+  ],
+  "stats": {
+    "totalResources": 7,
+    "byProtocol": {
+      "role": 1,
+      "execution": 1,
+      "thought": 1,
+      "manual": 2,
+      "tool": 2
+    },
+    "bySource": {
+      "project": 7
+    }
+  }
+}

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>农事日历 - AgriDec</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <style>
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background-color: #dee2e6;
+            border: 1px solid #dee2e6;
+        }
+        .calendar-day {
+            background-color: white;
+            min-height: 120px;
+            padding: 8px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .calendar-day:hover {
+            background-color: #f8f9fa;
+        }
+        .calendar-day.other-month {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+        .calendar-day.today {
+            background-color: #e8f5e8;
+            border: 2px solid #52c41a;
+        }
+        .calendar-day.has-tasks {
+            border-left: 4px solid #52c41a;
+        }
+        .day-number {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .task-item {
+            font-size: 11px;
+            background-color: #52c41a;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 3px;
+            margin-bottom: 2px;
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .task-item.urgent {
+            background-color: #ff4d4f;
+        }
+        .task-item.completed {
+            background-color: #95de64;
+            text-decoration: line-through;
+        }
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background-color: #52c41a;
+            margin-bottom: 1px;
+        }
+        .calendar-header-day {
+            background-color: #52c41a;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .season-indicator {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .season-spring { background: linear-gradient(135deg, #a8e6cf, #dcedc1); }
+        .season-summer { background: linear-gradient(135deg, #ffd3a5, #fd9853); }
+        .season-autumn { background: linear-gradient(135deg, #ffeaa7, #fab1a0); }
+        .season-winter { background: linear-gradient(135deg, #74b9ff, #0984e3); color: white; }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-seedling"></i> AgriDec
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('index') }}">数据看板</a>
+                <a class="nav-link" href="{{ url_for('seed_dashboard') }}">种子推荐</a>
+                <a class="nav-link" href="{{ url_for('weather_dashboard') }}">天气适宜度</a>
+                <a class="nav-link" href="{{ url_for('machine_comparison') }}">农具对比</a>
+                <a class="nav-link active" href="{{ url_for('farming_calendar') }}">农事日历</a>
+                <a class="nav-link" href="{{ url_for('purchase_module') }}">农资采购</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- 页面标题 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2><i class="fas fa-calendar-alt text-success"></i> 农事日历</h2>
+                <p class="text-muted">基于作物周期数据的本地农事日历，智能提醒农时安排</p>
+            </div>
+        </div>
+
+        <!-- 季节指示器 -->
+        <div class="season-indicator season-spring" id="seasonIndicator">
+            <h4><i class="fas fa-leaf"></i> 当前季节：春季 (适宜播种期)</h4>
+            <p>建议作物：玉米、小麦、水稻 | 主要农事：整地、播种、施肥</p>
+        </div>
+
+        <!-- 日历控制 -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="btn-group" role="group">
+                    <button class="btn btn-outline-success" onclick="previousMonth()">
+                        <i class="fas fa-chevron-left"></i> 上月
+                    </button>
+                    <button class="btn btn-success" id="currentMonth">2025年8月</button>
+                    <button class="btn btn-outline-success" onclick="nextMonth()">
+                        下月 <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-6 text-end">
+                <button class="btn btn-success" onclick="addTask()">
+                    <i class="fas fa-plus"></i> 添加农事任务
+                </button>
+                <button class="btn btn-outline-success" onclick="showTaskList()">
+                    <i class="fas fa-list"></i> 任务列表
+                </button>
+            </div>
+        </div>
+
+        <!-- 日历主体 -->
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="calendar-header">
+                    <div class="calendar-header-day">周日</div>
+                    <div class="calendar-header-day">周一</div>
+                    <div class="calendar-header-day">周二</div>
+                    <div class="calendar-header-day">周三</div>
+                    <div class="calendar-header-day">周四</div>
+                    <div class="calendar-header-day">周五</div>
+                    <div class="calendar-header-day">周六</div>
+                </div>
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- 日历格子将通过JavaScript生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 今日任务提醒 -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5><i class="fas fa-bell"></i> 今日任务提醒</h5>
+                    </div>
+                    <div class="card-body" id="todayTasks">
+                        <!-- 今日任务将通过JavaScript加载 -->
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5><i class="fas fa-exclamation-triangle"></i> 紧急任务</h5>
+                    </div>
+                    <div class="card-body" id="urgentTasks">
+                        <!-- 紧急任务将通过JavaScript加载 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 农事知识 -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-lightbulb"></i> 本月农事知识</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h6><i class="fas fa-seedling text-success"></i> 播种指南</h6>
+                                <p class="small">8月适宜播种秋季蔬菜，如白菜、萝卜、菠菜等。注意土壤湿度和温度控制。</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h6><i class="fas fa-tint text-primary"></i> 灌溉建议</h6>
+                                <p class="small">夏季高温期间，建议早晚灌溉，避免中午高温时段，减少水分蒸发。</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h6><i class="fas fa-bug text-warning"></i> 病虫防治</h6>
+                                <p class="small">8月是病虫害高发期，注意预防玉米螟、稻飞虱等害虫，及时喷洒农药。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 任务详情模态框 -->
+    <div class="modal fade" id="taskModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">农事任务详情</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="taskForm">
+                        <div class="mb-3">
+                            <label class="form-label">任务名称</label>
+                            <input type="text" class="form-control" id="taskName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">任务日期</label>
+                            <input type="date" class="form-control" id="taskDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">任务类型</label>
+                            <select class="form-select" id="taskType">
+                                <option value="播种">播种</option>
+                                <option value="施肥">施肥</option>
+                                <option value="灌溉">灌溉</option>
+                                <option value="除草">除草</option>
+                                <option value="收获">收获</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">优先级</label>
+                            <select class="form-select" id="taskPriority">
+                                <option value="normal">普通</option>
+                                <option value="urgent">紧急</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">任务描述</label>
+                            <textarea class="form-control" id="taskDescription" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-success" onclick="saveTask()">保存任务</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="text-center">
+                <p>&copy; 2025 AgriDec - 农户专属农业信息可视化决策系统. 基于专业技术架构构建.</p>
+                <p>数据驱动的农业决策支持系统 | 集成专业数据采集与可视化技术</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentDate = new Date();
+        let tasks = [];
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTasks();
+            generateCalendar();
+            updateSeasonIndicator();
+            loadTodayTasks();
+        });
+
+        // 生成日历
+        function generateCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            document.getElementById('currentMonth').textContent = `${year}年${month + 1}月`;
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '';
+            
+            for (let i = 0; i < 42; i++) {
+                const cellDate = new Date(startDate);
+                cellDate.setDate(startDate.getDate() + i);
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.onclick = () => selectDate(cellDate);
+                
+                if (cellDate.getMonth() !== month) {
+                    dayElement.classList.add('other-month');
+                }
+                
+                if (isToday(cellDate)) {
+                    dayElement.classList.add('today');
+                }
+                
+                const dayTasks = getTasksForDate(cellDate);
+                if (dayTasks.length > 0) {
+                    dayElement.classList.add('has-tasks');
+                }
+                
+                dayElement.innerHTML = `
+                    <div class="day-number">${cellDate.getDate()}</div>
+                    ${dayTasks.map(task => 
+                        `<span class="task-item ${task.priority === 'urgent' ? 'urgent' : ''} ${task.completed ? 'completed' : ''}">${task.name}</span>`
+                    ).join('')}
+                `;
+                
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+
+        // 检查是否为今天
+        function isToday(date) {
+            const today = new Date();
+            return date.toDateString() === today.toDateString();
+        }
+
+        // 获取指定日期的任务
+        function getTasksForDate(date) {
+            return tasks.filter(task => {
+                const taskDate = new Date(task.date);
+                return taskDate.toDateString() === date.toDateString();
+            });
+        }
+
+        // 上一月
+        function previousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            generateCalendar();
+            updateSeasonIndicator();
+        }
+
+        // 下一月
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            generateCalendar();
+            updateSeasonIndicator();
+        }
+
+        // 选择日期
+        function selectDate(date) {
+            document.getElementById('taskDate').value = date.toISOString().split('T')[0];
+            addTask();
+        }
+
+        // 添加任务
+        function addTask() {
+            const modal = new bootstrap.Modal(document.getElementById('taskModal'));
+            document.getElementById('taskForm').reset();
+            if (!document.getElementById('taskDate').value) {
+                document.getElementById('taskDate').value = new Date().toISOString().split('T')[0];
+            }
+            modal.show();
+        }
+
+        // 保存任务
+        function saveTask() {
+            const task = {
+                id: Date.now(),
+                name: document.getElementById('taskName').value,
+                date: document.getElementById('taskDate').value,
+                type: document.getElementById('taskType').value,
+                priority: document.getElementById('taskPriority').value,
+                description: document.getElementById('taskDescription').value,
+                completed: false
+            };
+            
+            tasks.push(task);
+            saveTasks();
+            generateCalendar();
+            loadTodayTasks();
+            
+            const modal = bootstrap.Modal.getInstance(document.getElementById('taskModal'));
+            modal.hide();
+        }
+
+        // 加载任务
+        function loadTasks() {
+            const saved = localStorage.getItem('agridec_tasks');
+            if (saved) {
+                tasks = JSON.parse(saved);
+            } else {
+                // 初始化示例任务
+                tasks = [
+                    {
+                        id: 1,
+                        name: '玉米播种',
+                        date: '2025-08-15',
+                        type: '播种',
+                        priority: 'urgent',
+                        description: '春玉米播种，注意土壤湿度',
+                        completed: false
+                    },
+                    {
+                        id: 2,
+                        name: '小麦施肥',
+                        date: '2025-08-10',
+                        type: '施肥',
+                        priority: 'normal',
+                        description: '追施氮肥，促进生长',
+                        completed: true
+                    }
+                ];
+                saveTasks();
+            }
+        }
+
+        // 保存任务
+        function saveTasks() {
+            localStorage.setItem('agridec_tasks', JSON.stringify(tasks));
+        }
+
+        // 加载今日任务
+        function loadTodayTasks() {
+            const today = new Date();
+            const todayTasks = getTasksForDate(today);
+            const urgentTasks = tasks.filter(task => task.priority === 'urgent' && !task.completed);
+            
+            document.getElementById('todayTasks').innerHTML = todayTasks.length > 0 
+                ? todayTasks.map(task => `
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="${task.completed ? 'text-decoration-line-through' : ''}">${task.name}</span>
+                        <button class="btn btn-sm btn-outline-success" onclick="toggleTask(${task.id})">
+                            ${task.completed ? '取消完成' : '标记完成'}
+                        </button>
+                    </div>
+                `).join('')
+                : '<p class="text-muted">今日暂无农事任务</p>';
+            
+            document.getElementById('urgentTasks').innerHTML = urgentTasks.length > 0
+                ? urgentTasks.map(task => `
+                    <div class="alert alert-warning py-2 mb-2">
+                        <strong>${task.name}</strong><br>
+                        <small>${task.date} | ${task.type}</small>
+                    </div>
+                `).join('')
+                : '<p class="text-muted">暂无紧急任务</p>';
+        }
+
+        // 切换任务完成状态
+        function toggleTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.completed = !task.completed;
+                saveTasks();
+                generateCalendar();
+                loadTodayTasks();
+            }
+        }
+
+        // 更新季节指示器
+        function updateSeasonIndicator() {
+            const month = currentDate.getMonth() + 1;
+            const indicator = document.getElementById('seasonIndicator');
+            
+            if (month >= 3 && month <= 5) {
+                indicator.className = 'season-indicator season-spring';
+                indicator.innerHTML = '<h4><i class="fas fa-leaf"></i> 当前季节：春季 (适宜播种期)</h4><p>建议作物：玉米、小麦、水稻 | 主要农事：整地、播种、施肥</p>';
+            } else if (month >= 6 && month <= 8) {
+                indicator.className = 'season-indicator season-summer';
+                indicator.innerHTML = '<h4><i class="fas fa-sun"></i> 当前季节：夏季 (生长管理期)</h4><p>建议作物：蔬菜、豆类 | 主要农事：灌溉、除草、病虫防治</p>';
+            } else if (month >= 9 && month <= 11) {
+                indicator.className = 'season-indicator season-autumn';
+                indicator.innerHTML = '<h4><i class="fas fa-leaf"></i> 当前季节：秋季 (收获期)</h4><p>建议作物：秋菜、冬小麦 | 主要农事：收获、储存、秋播</p>';
+            } else {
+                indicator.className = 'season-indicator season-winter';
+                indicator.innerHTML = '<h4><i class="fas fa-snowflake"></i> 当前季节：冬季 (休整期)</h4><p>建议作物：温室蔬菜 | 主要农事：设备维护、规划来年</p>';
+            }
+        }
+
+        // 显示任务列表
+        function showTaskList() {
+            alert('任务列表功能\n\n将显示所有农事任务的详细列表，包括：\n- 任务筛选和排序\n- 任务编辑和删除\n- 任务统计分析\n- 导出功能');
+        }
+    </script>
+</body>
+</html>

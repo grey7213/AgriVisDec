@@ -1,0 +1,328 @@
+/* AgriDec 自定义样式 */
+
+/* 全局样式 */
+body {
+    font-family: 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* 导航栏样式 */
+.navbar-brand {
+    font-weight: bold;
+    color: #52c41a !important;
+    font-size: 1.5rem;
+}
+
+.navbar-brand:hover {
+    color: #389e0d !important;
+}
+
+/* 按钮样式 */
+.btn-primary {
+    background-color: #52c41a;
+    border-color: #52c41a;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #389e0d;
+    border-color: #389e0d;
+    transform: translateY(-1px);
+}
+
+/* 卡片样式 */
+.card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* 特色卡片 */
+.feature-card {
+    height: 100%;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.feature-card .card-body {
+    padding: 2rem;
+}
+
+/* 英雄区域 */
+.hero-section {
+    background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+    color: white;
+    padding: 80px 0;
+    margin-bottom: 0;
+}
+
+.hero-section h1 {
+    font-weight: 300;
+    margin-bottom: 1.5rem;
+}
+
+.hero-section .lead {
+    font-size: 1.25rem;
+    font-weight: 300;
+}
+
+/* 图表容器 */
+.chart-container {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin: 20px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f0f0f0;
+}
+
+.chart-container h5 {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+/* 数据卡片 */
+.data-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 10px 0;
+    border-left: 4px solid #52c41a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 状态指示器 */
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.status-online {
+    background-color: #52c41a;
+    animation: pulse 2s infinite;
+}
+
+.status-offline {
+    background-color: #ff4d4f;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(82, 196, 26, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(82, 196, 26, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(82, 196, 26, 0);
+    }
+}
+
+/* 种子推荐页面样式 */
+.seed-card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    margin-bottom: 20px;
+    border-radius: 15px;
+}
+
+.seed-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.recommendation-badge {
+    background: linear-gradient(45deg, #52c41a, #73d13d);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.price-trend {
+    color: #52c41a;
+    font-weight: bold;
+}
+
+.price-trend.down {
+    color: #ff4d4f;
+}
+
+/* 天气看板样式 */
+.weather-card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.weather-today {
+    background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+    color: white;
+}
+
+.weather-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.suitability-score {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.score-excellent { color: #52c41a; }
+.score-good { color: #faad14; }
+.score-fair { color: #fa8c16; }
+.score-poor { color: #ff4d4f; }
+
+.activity-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 10px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #52c41a;
+}
+
+.activity-recommended { border-left-color: #52c41a; }
+.activity-caution { border-left-color: #faad14; }
+.activity-not-recommended { border-left-color: #ff4d4f; }
+
+.forecast-item {
+    text-align: center;
+    padding: 15px;
+    border-radius: 10px;
+    background: #f8f9fa;
+    margin: 5px;
+    transition: all 0.3s ease;
+}
+
+.forecast-item:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+}
+
+/* 筛选区域 */
+.filter-section {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    border: 1px solid #e9ecef;
+}
+
+/* 表格样式 */
+.table {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.table thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 40px 0;
+    }
+    
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+    
+    .chart-container {
+        padding: 15px;
+    }
+    
+    .feature-card .card-body {
+        padding: 1.5rem;
+    }
+}
+
+/* 加载动画 */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #52c41a;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 工具提示 */
+.tooltip-inner {
+    background-color: #52c41a;
+    color: white;
+}
+
+.tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #52c41a;
+}
+
+/* 进度条 */
+.progress {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #f0f0f0;
+}
+
+.progress-bar {
+    border-radius: 4px;
+}
+
+/* 页脚样式 */
+footer {
+    margin-top: 50px;
+    background-color: #343a40 !important;
+}
+
+footer p {
+    margin-bottom: 0.5rem;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #52c41a;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #389e0d;
+}

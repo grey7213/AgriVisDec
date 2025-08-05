@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>农具对比表 - AgriDec</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-seedling"></i> AgriDec
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('index') }}">数据看板</a>
+                <a class="nav-link" href="{{ url_for('seed_dashboard') }}">种子推荐</a>
+                <a class="nav-link" href="{{ url_for('weather_dashboard') }}">天气适宜度</a>
+                <a class="nav-link active" href="{{ url_for('machine_comparison') }}">农具对比</a>
+                <a class="nav-link" href="{{ url_for('farming_calendar') }}">农事日历</a>
+                <a class="nav-link" href="{{ url_for('purchase_module') }}">农资采购</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- 页面标题 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2><i class="fas fa-tools text-success"></i> 农具对比表</h2>
+                <p class="text-muted">农机设备价格对比和性能分析，帮助农户做出明智的采购决策</p>
+            </div>
+        </div>
+
+        <!-- 筛选区域 -->
+        <div class="filter-section mb-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label">设备类型</label>
+                    <select class="form-select" id="machineType">
+                        <option value="">全部类型</option>
+                        <option value="拖拉机">拖拉机</option>
+                        <option value="收割机">收割机</option>
+                        <option value="播种机">播种机</option>
+                        <option value="插秧机">插秧机</option>
+                        <option value="施肥机">施肥机</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">品牌</label>
+                    <select class="form-select" id="machineBrand">
+                        <option value="">全部品牌</option>
+                        <option value="约翰迪尔">约翰迪尔</option>
+                        <option value="雷沃重工">雷沃重工</option>
+                        <option value="久保田">久保田</option>
+                        <option value="东风农机">东风农机</option>
+                        <option value="中联重科">中联重科</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">价格范围</label>
+                    <select class="form-select" id="priceRange">
+                        <option value="">全部价格</option>
+                        <option value="0-50000">5万以下</option>
+                        <option value="50000-100000">5-10万</option>
+                        <option value="100000-200000">10-20万</option>
+                        <option value="200000-999999">20万以上</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">排序方式</label>
+                    <select class="form-select" id="sortBy">
+                        <option value="price_asc">价格从低到高</option>
+                        <option value="price_desc">价格从高到低</option>
+                        <option value="name_asc">名称A-Z</option>
+                        <option value="brand_asc">品牌A-Z</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <button class="btn btn-success" onclick="filterMachines()">
+                        <i class="fas fa-search"></i> 筛选对比
+                    </button>
+                    <button class="btn btn-outline-secondary ms-2" onclick="resetFilters()">
+                        <i class="fas fa-undo"></i> 重置
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 农具对比表格 -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-table"></i> 农机设备详细对比</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="machineTable">
+                        <thead class="table-success">
+                            <tr>
+                                <th>设备名称</th>
+                                <th>品牌</th>
+                                <th>型号</th>
+                                <th>价格</th>
+                                <th>规格参数</th>
+                                <th>适用地区</th>
+                                <th>性价比</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="machineTableBody">
+                            <!-- 数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 价格趋势图表 -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="chart-container">
+                    <h5><i class="fas fa-chart-line"></i> 农机价格趋势分析</h5>
+                    <div id="priceChart" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 品牌对比图表 -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5><i class="fas fa-chart-pie"></i> 品牌市场份额</h5>
+                    <div id="brandChart" style="height: 300px;"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5><i class="fas fa-chart-bar"></i> 设备类型分布</h5>
+                    <div id="typeChart" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="text-center">
+                <p>&copy; 2025 AgriDec - 农户专属农业信息可视化决策系统. 基于专业技术架构构建.</p>
+                <p>数据驱动的农业决策支持系统 | 集成专业数据采集与可视化技术</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let machineData = [];
+
+        // 页面加载时获取数据
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMachineData();
+            initCharts();
+        });
+
+        // 加载农机数据
+        async function loadMachineData() {
+            try {
+                const response = await fetch('/api/farm-machines');
+                const data = await response.json();
+                machineData = data;
+                displayMachines(machineData);
+            } catch (error) {
+                console.error('加载农机数据失败:', error);
+            }
+        }
+
+        // 显示农机数据
+        function displayMachines(machines) {
+            const tbody = document.getElementById('machineTableBody');
+            tbody.innerHTML = '';
+
+            machines.forEach(machine => {
+                const row = document.createElement('tr');
+                const costEfficiency = calculateCostEfficiency(machine.price);
+                
+                row.innerHTML = `
+                    <td><strong>${machine.product_name}</strong></td>
+                    <td>${machine.brand}</td>
+                    <td>${machine.model}</td>
+                    <td class="text-success"><strong>¥${machine.price.toLocaleString()}</strong></td>
+                    <td><small>${machine.specifications}</small></td>
+                    <td>${machine.region}</td>
+                    <td>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" style="width: ${costEfficiency}%">
+                                ${costEfficiency}分
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-success" onclick="viewDetails('${machine.model}')">
+                            <i class="fas fa-eye"></i> 详情
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 计算性价比评分
+        function calculateCostEfficiency(price) {
+            if (price < 50000) return 95;
+            if (price < 100000) return 85;
+            if (price < 200000) return 75;
+            return 65;
+        }
+
+        // 筛选农机
+        function filterMachines() {
+            const type = document.getElementById('machineType').value;
+            const brand = document.getElementById('machineBrand').value;
+            const priceRange = document.getElementById('priceRange').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            let filtered = machineData.filter(machine => {
+                let match = true;
+                
+                if (type && !machine.product_name.includes(type)) match = false;
+                if (brand && machine.brand !== brand) match = false;
+                
+                if (priceRange) {
+                    const [min, max] = priceRange.split('-').map(Number);
+                    if (machine.price < min || machine.price > max) match = false;
+                }
+                
+                return match;
+            });
+
+            // 排序
+            filtered.sort((a, b) => {
+                switch (sortBy) {
+                    case 'price_asc': return a.price - b.price;
+                    case 'price_desc': return b.price - a.price;
+                    case 'name_asc': return a.product_name.localeCompare(b.product_name);
+                    case 'brand_asc': return a.brand.localeCompare(b.brand);
+                    default: return 0;
+                }
+            });
+
+            displayMachines(filtered);
+        }
+
+        // 重置筛选
+        function resetFilters() {
+            document.getElementById('machineType').value = '';
+            document.getElementById('machineBrand').value = '';
+            document.getElementById('priceRange').value = '';
+            document.getElementById('sortBy').value = 'price_asc';
+            displayMachines(machineData);
+        }
+
+        // 查看详情
+        function viewDetails(model) {
+            alert(`查看 ${model} 的详细信息\n\n此功能将在后续版本中完善，包括：\n- 详细技术参数\n- 用户评价\n- 维修保养信息\n- 购买建议`);
+        }
+
+        // 初始化图表
+        function initCharts() {
+            // 价格趋势图表
+            const priceChart = echarts.init(document.getElementById('priceChart'));
+            const priceOption = {
+                title: { text: '农机价格趋势', left: 'center' },
+                tooltip: { trigger: 'axis' },
+                xAxis: { type: 'category', data: ['1月', '2月', '3月', '4月', '5月', '6月'] },
+                yAxis: { type: 'value', name: '价格(万元)' },
+                series: [{
+                    name: '平均价格',
+                    type: 'line',
+                    data: [12.5, 13.2, 12.8, 13.5, 14.1, 13.9],
+                    smooth: true,
+                    itemStyle: { color: '#52c41a' }
+                }]
+            };
+            priceChart.setOption(priceOption);
+
+            // 品牌份额图表
+            const brandChart = echarts.init(document.getElementById('brandChart'));
+            const brandOption = {
+                title: { text: '品牌市场份额', left: 'center' },
+                tooltip: { trigger: 'item' },
+                series: [{
+                    type: 'pie',
+                    radius: '70%',
+                    data: [
+                        { value: 25, name: '约翰迪尔' },
+                        { value: 20, name: '雷沃重工' },
+                        { value: 18, name: '久保田' },
+                        { value: 15, name: '东风农机' },
+                        { value: 12, name: '中联重科' },
+                        { value: 10, name: '其他' }
+                    ]
+                }]
+            };
+            brandChart.setOption(brandOption);
+
+            // 设备类型分布图表
+            const typeChart = echarts.init(document.getElementById('typeChart'));
+            const typeOption = {
+                title: { text: '设备类型分布', left: 'center' },
+                tooltip: { trigger: 'axis' },
+                xAxis: { type: 'category', data: ['拖拉机', '收割机', '播种机', '插秧机', '施肥机'] },
+                yAxis: { type: 'value', name: '数量' },
+                series: [{
+                    type: 'bar',
+                    data: [35, 28, 22, 18, 15],
+                    itemStyle: { color: '#52c41a' }
+                }]
+            };
+            typeChart.setOption(typeOption);
+
+            // 响应式处理
+            window.addEventListener('resize', function() {
+                priceChart.resize();
+                brandChart.resize();
+                typeChart.resize();
+            });
+        }
+    </script>
+</body>
+</html>

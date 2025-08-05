@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员面板 - AgriDec</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .admin-card {
+            transition: all 0.3s ease;
+            border: 1px solid #dee2e6;
+            height: 100%;
+        }
+        .admin-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .admin-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .feature-badge {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="bi bi-leaf"></i> AgriDec
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('index') }}">
+                    <i class="bi bi-house"></i> 返回主页
+                </a>
+                <a class="nav-link" href="{{ url_for('logout') }}">
+                    <i class="bi bi-box-arrow-right"></i> 登出
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-gear"></i> 管理员面板</h2>
+                    <div class="text-muted">
+                        欢迎，{{ current_user.real_name or current_user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统状态概览 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-speedometer2"></i> 系统状态</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <div class="h4 text-success">运行中</div>
+                                <small class="text-muted">系统状态</small>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="h4 text-info" id="userCount">-</div>
+                                <small class="text-muted">注册用户</small>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="h4 text-warning" id="dataCount">-</div>
+                                <small class="text-muted">数据记录</small>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="h4 text-primary" id="dbStatus">MySQL</div>
+                                <small class="text-muted">数据库类型</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 管理功能 -->
+        <div class="row">
+            <!-- 数据库管理 -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card admin-card">
+                    <div class="card-body text-center">
+                        <div class="admin-icon text-primary">
+                            <i class="bi bi-database"></i>
+                        </div>
+                        <h5 class="card-title">
+                            数据库管理
+                            <span class="feature-badge">新功能</span>
+                        </h5>
+                        <p class="card-text text-muted">
+                            多数据库支持、数据同步、备份管理
+                        </p>
+                        <a href="{{ url_for('admin_database') }}" class="btn btn-primary">
+                            <i class="bi bi-arrow-right"></i> 进入管理
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 用户管理 -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card admin-card">
+                    <div class="card-body text-center">
+                        <div class="admin-icon text-success">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h5 class="card-title">用户管理</h5>
+                        <p class="card-text text-muted">
+                            用户账户、权限设置、活动监控
+                        </p>
+                        <button class="btn btn-success" onclick="alert('功能开发中')">
+                            <i class="bi bi-arrow-right"></i> 进入管理
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据爬虫 -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card admin-card">
+                    <div class="card-body text-center">
+                        <div class="admin-icon text-warning">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <h5 class="card-title">爬虫管理</h5>
+                        <p class="card-text text-muted">
+                            数据源配置、爬取任务、调度管理
+                        </p>
+                        <button class="btn btn-warning" onclick="alert('功能开发中')">
+                            <i class="bi bi-arrow-right"></i> 进入管理
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系统监控 -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card admin-card">
+                    <div class="card-body text-center">
+                        <div class="admin-icon text-info">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <h5 class="card-title">系统监控</h5>
+                        <p class="card-text text-muted">
+                            性能监控、日志查看、错误追踪
+                        </p>
+                        <button class="btn btn-info" onclick="alert('功能开发中')">
+                            <i class="bi bi-arrow-right"></i> 进入管理
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据分析 -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card admin-card">
+                    <div class="card-body text-center">
+                        <div class="admin-icon text-secondary">
+                            <i class="bi bi-bar-chart"></i>
+                        </div>
+                        <h5 class="card-title">数据分析</h5>
+                        <p class="card-text text-muted">
+                            数据统计、趋势分析、报告生成
+                        </p>
+                        <button class="btn btn-secondary" onclick="alert('功能开发中')">
+                            <i class="bi bi-arrow-right"></i> 进入管理
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系统设置 -->
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card admin-card">
+                    <div class="card-body text-center">
+                        <div class="admin-icon text-dark">
+                            <i class="bi bi-gear-fill"></i>
+                        </div>
+                        <h5 class="card-title">系统设置</h5>
+                        <p class="card-text text-muted">
+                            系统配置、安全设置、备份策略
+                        </p>
+                        <button class="btn btn-dark" onclick="alert('功能开发中')">
+                            <i class="bi bi-arrow-right"></i> 进入管理
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 快速操作 -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-lightning"></i> 快速操作</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <button class="btn btn-outline-primary w-100" onclick="refreshSystemStatus()">
+                                    <i class="bi bi-arrow-clockwise"></i> 刷新状态
+                                </button>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <button class="btn btn-outline-success w-100" onclick="testDatabaseConnection()">
+                                    <i class="bi bi-wifi"></i> 测试数据库
+                                </button>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <button class="btn btn-outline-warning w-100" onclick="viewSystemLogs()">
+                                    <i class="bi bi-journal-text"></i> 查看日志
+                                </button>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <button class="btn btn-outline-info w-100" onclick="exportSystemInfo()">
+                                    <i class="bi bi-download"></i> 导出信息
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 页面加载时获取系统状态
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshSystemStatus();
+        });
+
+        // 刷新系统状态
+        function refreshSystemStatus() {
+            // 这里可以添加AJAX调用获取实际的系统状态
+            // 暂时使用模拟数据
+            document.getElementById('userCount').textContent = '12';
+            document.getElementById('dataCount').textContent = '1,234';
+            
+            // 获取数据库状态
+            fetch('/api/database/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('dbStatus').textContent = data.data.primary_db.toUpperCase();
+                    }
+                })
+                .catch(error => {
+                    console.log('获取数据库状态失败:', error);
+                });
+        }
+
+        // 测试数据库连接
+        function testDatabaseConnection() {
+            fetch('/api/database/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const databases = data.data.databases;
+                        let message = '数据库连接状态:\n';
+                        
+                        Object.entries(databases).forEach(([dbType, dbInfo]) => {
+                            const status = dbInfo.status === 'connected' ? '✅ 连接正常' : '❌ 连接失败';
+                            message += `${dbType.toUpperCase()}: ${status}\n`;
+                        });
+                        
+                        alert(message);
+                    } else {
+                        alert('获取数据库状态失败: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    alert('测试失败: ' + error.message);
+                });
+        }
+
+        // 查看系统日志
+        function viewSystemLogs() {
+            alert('系统日志功能开发中...\n\n将支持:\n• 应用运行日志\n• 错误日志\n• 访问日志\n• 爬虫日志');
+        }
+
+        // 导出系统信息
+        function exportSystemInfo() {
+            const info = {
+                timestamp: new Date().toISOString(),
+                system: 'AgriDec 农业数据服务平台',
+                version: '1.0.0',
+                admin: '{{ current_user.username }}',
+                features: [
+                    '多数据库支持',
+                    '数据爬虫系统',
+                    '图表可视化',
+                    '用户认证系统'
+                ]
+            };
+            
+            const dataStr = JSON.stringify(info, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = 'agridec_system_info.json';
+            link.click();
+        }
+    </script>
+</body>
+</html>

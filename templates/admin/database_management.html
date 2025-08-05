@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据库管理 - AgriDec</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .status-connected { background-color: #28a745; }
+        .status-error { background-color: #dc3545; }
+        .status-warning { background-color: #ffc107; }
+        
+        .database-card {
+            transition: all 0.3s ease;
+            border: 1px solid #dee2e6;
+        }
+        .database-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .primary-badge {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+        
+        .backup-badge {
+            background: linear-gradient(45deg, #6c757d, #495057);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="bi bi-leaf"></i> AgriDec
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('index') }}">
+                    <i class="bi bi-house"></i> 返回主页
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-database"></i> 数据库管理</h2>
+                    <button class="btn btn-primary" onclick="refreshStatus()">
+                        <i class="bi bi-arrow-clockwise"></i> 刷新状态
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据库状态概览 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-info-circle"></i> 系统状态</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="systemStatus">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h4 mb-1" id="primaryDbStatus">-</div>
+                                    <small class="text-muted">主数据库</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h4 mb-1" id="backupDbStatus">-</div>
+                                    <small class="text-muted">备份数据库</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h4 mb-1" id="syncStatus">-</div>
+                                    <small class="text-muted">同步状态</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="h4 mb-1" id="totalTables">-</div>
+                                    <small class="text-muted">数据表数量</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 数据库详情 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-server"></i> 数据库详情</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="databaseDetails">
+                            <!-- 数据库卡片将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作面板 -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-gear"></i> 数据库操作</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary" onclick="syncDatabases()">
+                                <i class="bi bi-arrow-repeat"></i> 同步数据库
+                            </button>
+                            <button class="btn btn-outline-success" onclick="backupDatabase()">
+                                <i class="bi bi-download"></i> 备份数据库
+                            </button>
+                            <button class="btn btn-outline-info" onclick="testConnections()">
+                                <i class="bi bi-wifi"></i> 测试连接
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-toggle-on"></i> 数据库切换</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="dbTypeSelect" class="form-label">选择主数据库:</label>
+                            <select class="form-select" id="dbTypeSelect">
+                                <option value="mysql">MySQL</option>
+                                <option value="sqlite">SQLite</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-warning w-100" onclick="switchDatabase()">
+                            <i class="bi bi-arrow-left-right"></i> 切换数据库
+                        </button>
+                        <small class="text-muted mt-2 d-block">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            切换数据库需要重启应用才能生效
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作日志 -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-journal-text"></i> 操作日志</h5>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="clearLogs()">
+                            <i class="bi bi-trash"></i> 清空日志
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="operationLogs" style="height: 300px; overflow-y: auto; background-color: #f8f9fa; padding: 15px; border-radius: 5px;">
+                            <div class="text-muted">等待操作...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 全局变量
+        let currentStatus = null;
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshStatus();
+        });
+
+        // 刷新状态
+        async function refreshStatus() {
+            try {
+                addLog('正在获取数据库状态...', 'info');
+                
+                const response = await fetch('/api/database/status');
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentStatus = result.data;
+                    updateStatusDisplay();
+                    updateDatabaseDetails();
+                    addLog('数据库状态获取成功', 'success');
+                } else {
+                    addLog(`获取状态失败: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addLog(`获取状态异常: ${error.message}`, 'error');
+            }
+        }
+
+        // 更新状态显示
+        function updateStatusDisplay() {
+            if (!currentStatus) return;
+
+            // 更新系统状态
+            document.getElementById('primaryDbStatus').textContent = currentStatus.primary_db || '-';
+            document.getElementById('backupDbStatus').textContent = currentStatus.backup_db || '-';
+            document.getElementById('syncStatus').textContent = currentStatus.sync_enabled ? '已启用' : '已禁用';
+            
+            // 计算总表数
+            let totalTables = 0;
+            Object.values(currentStatus.databases || {}).forEach(db => {
+                totalTables += db.tables || 0;
+            });
+            document.getElementById('totalTables').textContent = totalTables;
+
+            // 更新数据库类型选择器
+            const dbSelect = document.getElementById('dbTypeSelect');
+            dbSelect.value = currentStatus.primary_db || 'mysql';
+        }
+
+        // 更新数据库详情
+        function updateDatabaseDetails() {
+            if (!currentStatus) return;
+
+            const container = document.getElementById('databaseDetails');
+            container.innerHTML = '';
+
+            Object.entries(currentStatus.databases || {}).forEach(([dbType, dbInfo]) => {
+                const isPrimary = dbType === currentStatus.primary_db;
+                const isBackup = dbType === currentStatus.backup_db;
+                
+                const statusClass = dbInfo.status === 'connected' ? 'status-connected' : 'status-error';
+                const cardClass = isPrimary ? 'border-primary' : (isBackup ? 'border-secondary' : '');
+                
+                const cardHtml = `
+                    <div class="col-md-6 mb-3">
+                        <div class="card database-card ${cardClass}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">
+                                        <span class="status-indicator ${statusClass}"></span>
+                                        ${dbType.toUpperCase()}
+                                    </h6>
+                                    <div>
+                                        ${isPrimary ? '<span class="primary-badge">主库</span>' : ''}
+                                        ${isBackup ? '<span class="backup-badge">备份</span>' : ''}
+                                    </div>
+                                </div>
+                                <div class="small text-muted">
+                                    <div>状态: ${dbInfo.status === 'connected' ? '已连接' : '连接失败'}</div>
+                                    ${dbInfo.version ? `<div>版本: ${dbInfo.version}</div>` : ''}
+                                    <div>数据表: ${dbInfo.tables || 0} 个</div>
+                                    ${dbInfo.error ? `<div class="text-danger">错误: ${dbInfo.error}</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        // 同步数据库
+        async function syncDatabases() {
+            try {
+                addLog('开始同步数据库...', 'info');
+                
+                const response = await fetch('/api/database/sync', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    addLog(result.message, 'success');
+                    if (result.data) {
+                        addLog(`同步详情: ${JSON.stringify(result.data.sync_results)}`, 'info');
+                    }
+                    refreshStatus();
+                } else {
+                    addLog(`同步失败: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addLog(`同步异常: ${error.message}`, 'error');
+            }
+        }
+
+        // 备份数据库
+        async function backupDatabase() {
+            try {
+                addLog('开始备份数据库...', 'info');
+                
+                const response = await fetch('/api/database/backup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    addLog(result.message, 'success');
+                    refreshStatus();
+                } else {
+                    addLog(`备份失败: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addLog(`备份异常: ${error.message}`, 'error');
+            }
+        }
+
+        // 测试连接
+        async function testConnections() {
+            if (!currentStatus) {
+                addLog('请先获取数据库状态', 'warning');
+                return;
+            }
+
+            for (const dbType of Object.keys(currentStatus.databases || {})) {
+                try {
+                    addLog(`测试 ${dbType} 连接...`, 'info');
+                    
+                    const response = await fetch('/api/database/test-connection', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ db_type: dbType })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        const status = result.data.connected ? '连接成功' : '连接失败';
+                        addLog(`${dbType}: ${status}`, result.data.connected ? 'success' : 'error');
+                    } else {
+                        addLog(`${dbType}: 测试失败 - ${result.error}`, 'error');
+                    }
+                } catch (error) {
+                    addLog(`${dbType}: 测试异常 - ${error.message}`, 'error');
+                }
+            }
+        }
+
+        // 切换数据库
+        async function switchDatabase() {
+            const dbType = document.getElementById('dbTypeSelect').value;
+            
+            if (!confirm(`确定要切换到 ${dbType} 数据库吗？这需要重启应用才能生效。`)) {
+                return;
+            }
+
+            try {
+                addLog(`切换到 ${dbType} 数据库...`, 'info');
+                
+                const response = await fetch('/api/database/switch', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ db_type: dbType })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    addLog(result.message, 'success');
+                    addLog('请重启应用以使更改生效', 'warning');
+                    refreshStatus();
+                } else {
+                    addLog(`切换失败: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addLog(`切换异常: ${error.message}`, 'error');
+            }
+        }
+
+        // 添加日志
+        function addLog(message, type = 'info') {
+            const logsContainer = document.getElementById('operationLogs');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const typeColors = {
+                'info': 'text-info',
+                'success': 'text-success',
+                'warning': 'text-warning',
+                'error': 'text-danger'
+            };
+            
+            const typeIcons = {
+                'info': 'bi-info-circle',
+                'success': 'bi-check-circle',
+                'warning': 'bi-exclamation-triangle',
+                'error': 'bi-x-circle'
+            };
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = `mb-1 ${typeColors[type] || 'text-muted'}`;
+            logEntry.innerHTML = `
+                <small class="text-muted">[${timestamp}]</small>
+                <i class="bi ${typeIcons[type] || 'bi-circle'}"></i>
+                ${message}
+            `;
+            
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
+
+        // 清空日志
+        function clearLogs() {
+            document.getElementById('operationLogs').innerHTML = '<div class="text-muted">日志已清空</div>';
+        }
+    </script>
+</body>
+</html>

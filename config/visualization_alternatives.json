@@ -1,0 +1,50 @@
+{
+  "alternative_charts": {
+    "regional_bar": {
+      "name": "地区柱状图",
+      "description": "使用柱状图展示各地区农业数据",
+      "chart_type": "bar",
+      "suitable_for": [
+        "农业产值对比",
+        "种植面积对比",
+        "产量对比"
+      ]
+    },
+    "regional_pie": {
+      "name": "地区饼图",
+      "description": "使用饼图展示各地区数据占比",
+      "chart_type": "pie",
+      "suitable_for": [
+        "产值占比",
+        "面积占比",
+        "品种分布"
+      ]
+    },
+    "regional_line": {
+      "name": "地区趋势图",
+      "description": "使用折线图展示各地区数据趋势",
+      "chart_type": "line",
+      "suitable_for": [
+        "时间序列数据",
+        "趋势分析",
+        "季节变化"
+      ]
+    },
+    "regional_scatter": {
+      "name": "地区散点图",
+      "description": "使用散点图展示地区间数据关系",
+      "chart_type": "scatter",
+      "suitable_for": [
+        "相关性分析",
+        "分布分析",
+        "异常检测"
+      ]
+    }
+  },
+  "fallback_strategy": {
+    "primary": "china_map",
+    "fallback_1": "regional_bar",
+    "fallback_2": "regional_pie",
+    "fallback_3": "regional_line"
+  }
+}
